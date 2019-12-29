@@ -5,11 +5,24 @@ Generic functions for 3D geometry analytics.
 
 In this module, we use arrays not matrices, explained well here:
   https://stackoverflow.com/questions/4151128/what-are-the-differences-between-numpy-arrays-and-matrices-which-one-should-i-u
+  
+Where possible prefer code in:
+ - https://github.com/scipy/scipy/tree/master/scipy/spatial/transform
+ - https://github.com/matthew-brett/transforms3d
+ 
+Alternative frameworks to use:
+ - https://github.com/moble/quaternion
+ - https://docs.blender.org/api/master/mathutils.html
+
+
+  
 """
 
 from numpy.linalg import norm
-from numpy import identity, array, cos, sin, arccos, arcsin, dot, cross
+from numpy import (
+    identity, array, cos, sin, arccos, arcsin, dot, cross, deg2rad, rad2deg )
 
+from scipy.spatial.transform import Rotation
 
 # Homogenous identity matrix
 HOMOG_IDENTITY = identity(4)
@@ -25,6 +38,9 @@ Z_UNIT = array([0, 0, 1])
 # Gravity constant
 G = array([0, 0, -9.81])
 
+# Zero position constant
+Z = array([0, 0, 0])
+
 
 def rot_x(angle):
     return array([
@@ -32,7 +48,7 @@ def rot_x(angle):
         [0, cos(angle), -sin(angle)],
         [0, sin(angle), cos(angle)]
     ])
-    
+
     
 def rot_y(angle):
     return array([
@@ -66,7 +82,7 @@ def coerse_arcsin(r):
 def hm(rot=ROT_IDENTITY, trans=array([0, 0, 0])):
     """ Create homogenous matrix from rotation and translation."""
     m = HOMOG_IDENTITY.copy()
-    m[0:3, 3] = trans.reshape((3, 1))
+    m[0:3, 3] = trans[0:3]
     m[0:3, 0:3] = rot
     return m
 
@@ -97,3 +113,8 @@ def aa2rot(angle, axis):
     sk = skew(axis)
     m = ROT_IDENTITY + sk*sin(angle) + (1 - cos(angle)) * dot(sk, sk)
     return m
+
+
+def quat2rot(quat):
+    Rotation.fromquat(quat).as_matrix()
+    
